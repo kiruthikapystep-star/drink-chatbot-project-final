@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Drink Chatbot</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f2f2f2;
+            padding: 20px;
+        }
+        #chat {
+            background: white;
+            padding: 10px;
+            height: 300px;
+            overflow-y: scroll;
+            border-radius: 10px;
+        }
+        input {
+            width: 70%;
+            padding: 10px;
+        }
+        button {
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>🍹 Drink Order Chatbot</h2>
+
+<div id="chat"></div>
+
+<br>
+
+<input type="text" id="input" placeholder="Type drink name...">
+<button onclick="send()">Send</button>
+<button onclick="startVoice()">🎤</button>
+
+<script>
+
+function send() {
+    let input = document.getElementById("input").value;
+
+    fetch(`http://127.0.0.1:8000/chat?message=${input}`)
+    .then(res => res.json())
+    .then(data => {
+
+        let chatBox = document.getElementById("chat");
+
+        // show user msg
+        chatBox.innerHTML += "<p><b>You:</b> " + input + "</p>";
+
+        // show bot msg
+        chatBox.innerHTML += "<p><b>Bot:</b> " + data.reply + "</p>";
+
+        // 🔊 VOICE OUTPUT (IMPORTANT)
+        speak(data.reply);
+
+        // clear input
+        document.getElementById("input").value = "";
+
+        // auto scroll
+        chatBox.scrollTop = chatBox.scrollHeight;
+    });
+}
+
+// 🔊 SPEAK FUNCTION (must add)
+function speak(text) {
+    let speech = new SpeechSynthesisUtterance(text);
+    speech.lang = "en-US";
+    window.speechSynthesis.speak(speech);
+}
+
+// 🎤 Voice input
+function startVoice() {
+    let recognition = new webkitSpeechRecognition();
+    recognition.lang = "en-US";
+
+    recognition.onresult = function(event) {
+        let text = event.results[0][0].transcript;
+        document.getElementById("input").value = text;
+
+        send(); // 🔥 auto send
+    };
+
+    recognition.start();
+}
+
+</script>
+
+</body>
+</html>
